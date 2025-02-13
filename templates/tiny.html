@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TinyMCE</title>
+    <script src="https://cdn.tiny.cloud/1/lvhid1eqo3eg5t46a7i84dpk6msr8pgtth5t2td5mbgf4mnc/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+</head>
+<body>
+    
+  <script>
+      tinymce.init({
+        selector: 'textarea',
+        plugins: [
+          'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'image', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount',
+           'checklist', 'mediaembed', 'casechange', 'export', 'formatpainter', 'pageembed', 'a11ychecker', 'tinymcespellchecker', 'permanentpen', 'powerpaste', 'advtable', 'advcode', 'editimage', 'advtemplate', 'ai', 'mentions', 'tinycomments', 'tableofcontents', 'footnotes', 'mergetags', 'autocorrect', 'typography', 'inlinecss', 'markdown','importword', 'exportword', 'exportpdf'
+        ],
+        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+        tinycomments_mode: 'embedded',
+        tinycomments_author: 'Author name',
+        mergetags_list: [
+          { value: 'First.Name', title: 'First Name' },
+          { value: 'Email', title: 'Email' },
+        ],
+        ai_request: (request, respondWith) => respondWith.string(() => Promise.reject('See docs to implement AI Assistant')),
+      });
+    </script>
+    <textarea>
+      Welcome to Veristasia!
+      Its your all in one platform to publish blogs, poetry, save resources, browse, all including a chatbot-Muse throughout.
+    </textarea>
+</body>
+</html>

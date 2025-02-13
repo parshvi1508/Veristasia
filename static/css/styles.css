@@ -1,0 +1,202 @@
+/* styles.css */
+:root {
+    --glacier-blue: #a5d8ff;
+    --deep-glacier: #2c5282;
+    --ice-white: #f8fafc;
+    --penguin-black: #1a202c;
+    --aurora-green: #9ae6b4;
+    --frost-gray: #cbd5e0;
+  }
+  
+  /* Base Styles */
+  body {
+    background: linear-gradient(135deg, var(--ice-white), var(--glacier-blue));
+    color: var(--penguin-black);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+  }
+  
+  .haven-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+  }
+  
+  /* Ice Block Effect for Sections */
+  section {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(44, 82, 130, 0.1);
+    transition: transform 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--glacier-blue), var(--deep-glacier));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  section:hover {
+    transform: translateY(-5px);
+  }
+  
+  section:hover::before {
+    opacity: 1;
+  }
+  
+  /* Profile Section */
+  .profile-section {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2rem;
+  }
+  
+  .avatar {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 4px solid var(--glacier-blue);
+    transition: transform 0.3s ease;
+  }
+  
+  .avatar:hover {
+    transform: scale(1.05);
+    border-color: var(--deep-glacier);
+  }
+  
+  .social-links a {
+    color: var(--deep-glacier);
+    margin-right: 1rem;
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+  
+  .social-links a:hover {
+    color: var(--aurora-green);
+  }
+  
+  /* Buttons */
+  .btn {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+  }
+  
+  .btn-primary {
+    background: var(--deep-glacier);
+    color: var(--ice-white);
+  }
+  
+  .btn-primary:hover {
+    background: var(--glacier-blue);
+    color: var(--deep-glacier);
+    transform: translateY(-2px);
+  }
+  
+  .btn-secondary {
+    background: var(--frost-gray);
+    color: var(--penguin-black);
+  }
+  
+  .btn-danger {
+    background: #fc8181;
+    color: var(--ice-white);
+  }
+  
+  /* Content Creation Section */
+  .creation-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+  
+  /* Drafts and Published Content */
+  .content-list, .drafts-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .content-item, .draft-item {
+    background: var(--ice-white);
+    padding: 1.5rem;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+  }
+  
+  .content-item:hover, .draft-item:hover {
+    box-shadow: 0 8px 16px rgba(44, 82, 130, 0.1);
+  }
+  
+  /* Todo List */
+  .todo-container {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 300px;
+    background: var(--ice-white);
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(44, 82, 130, 0.1);
+    z-index: 1000;
+  }
+  
+  .todo-content {
+    padding: 1rem;
+  }
+  
+  #todo-items li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--frost-gray);
+  }
+  
+  /* Screen Time Reminder */
+  .reminder-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--ice-white);
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 8px 16px rgba(44, 82, 130, 0.2);
+    z-index: 1001;
+  }
+  
+  /* Editor Modal */
+  .editor-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(26, 32, 44, 0.8);
+    z-index: 1002;
+  }
+  
+  .editor-content {
+    position: relative;
+    width: 80%;
+    max-width: 1000px;
+    margin: 2rem auto;
+    background: var(--ice-white);
+    padding: 2rem;
+    border-radius: 15px;
+  }

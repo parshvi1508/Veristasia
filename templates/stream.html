@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Stream - Blogs{% endblock %}
+
+{% block content %}
+<div class="blog-container">
+    <h1>Blogs</h1>
+    <form method="POST" action="{{ url_for('stream') }}" class="blog-form" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
+        <div class="form-group">
+            <label for="title">Title:</label>
+            <input type="text" id="title" name="title" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label for="category">Category:</label>
+            <select id="category" name="category" class="form-control" required>
+                <option value="">Select Category</option>
+                <option value="technology">Technology</option>
+                <option value="lifestyle">Lifestyle</option>
+                <option value="travel">Travel</option>
+                <option value="food">Food</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="featured_image">Featured Image:</label>
+            <input type="file" id="featured_image" name="featured_image" class="form-control-file" accept="image/*">
+        </div>
+
+        <div class="form-group">
+            <label for="content">Content:</label>
+            <textarea id="content" name="content"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="tags">Tags:</label>
+            <input type="text" id="tags" name="tags" class="form-control" 
+                   placeholder="e.g., programming, web, python">
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Publish</button>
+            <button type="button" class="btn btn-secondary" onclick="saveDraft()">Save as Draft</button>
+        </div>
+    </form>
+
+    <!-- ... existing blog list and other content ... -->
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdn.tiny.cloud/1/lvhid1eqo3eg5t46a7i84dpk6msr8pgtth5t2td5mbgf4mnc/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+<script src="{{ url_for('static', filename='js/blog.js') }}"></script>
+<script>
+    tinymce.init({
+        selector: '#content',
+        height: 500,
+        plugins: [
+            'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'image', 
+            'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 
+            'wordcount', 'checklist', 'mediaembed', 'casechange', 'export', 
+            'formatpainter', 'pageembed', 'a11ychecker', 'tinymcespellchecker', 
+            'permanentpen', 'powerpaste', 'advtable', 'advcode', 'editimage', 
+            'advtemplate', 'ai', 'mentions', 'tinycomments', 'tableofcontents', 
+            'footnotes', 'mergetags', 'autocorrect', 'typography', 'inlinecss', 
+            'markdown', 'importword', 'exportword', 'exportpdf'
+        ],
+        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | ' +
+                'link image media table mergetags | addcomment showcomments | ' +
+                'spellcheckdialog a11ycheck typography | align lineheight | ' +
+                'checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+        content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; font-size: 16px; line-height: 1.5; }',
+        images_upload_url: '{{ url_for("upload_image") }}',
+        images_upload_handler: function (blobInfo, success, failure) {
+            let formData = new FormData();
+            formData.append('file', blobInfo.blob(), blobInfo.filename());
+
+            fetch('{{ url_for("upload_image") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(result => success(result.location))
+            .catch(error => failure('Image upload failed'));
+        },
+        tinycomments_mode: 'embedded',
+        tinycomments_author: 'Author',
+        mergetags_list: [
+            { value: 'First.Name', title: 'First Name' },
+            { value: 'Email', title: 'Email' },
+        ]
+    });
+</script>
+{% endblock %}

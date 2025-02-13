@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Veristasia - Mind Unfolded, Soul Unveiled</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Montserrat:wght@300;400;500;600&display=swap');
+
+        :root {
+            --primary-blue: #C9E3F8;
+            --deep-blue: #86B6E8;
+            --aurora-green: #A8E6CF;
+            --midnight: #2D3748;
+            --frost: rgba(255, 255, 255, 0.95);
+            --gradient-bg: linear-gradient(135deg, #F7FAFC 0%, #E3F2FD 50%, #BBDEFB 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        .navbar {
+            font-family: 'Cormorant Garamond', serif;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--nav-height);
+            background: var(--frost);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-brand {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--midnight);
+            text-decoration: none;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--midnight);
+            font-weight: 500;
+            position: relative;
+            padding: 0.5rem 1rem;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--deep-blue), var(--aurora-green));
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .nav-link.active {
+            color: var(--deep-blue);
+        }
+
+        .nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--midnight);
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--gradient-bg);
+            color: var(--midnight);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--aurora-green), var(--deep-blue));
+            z-index: 1000;
+            transition: width 0.1s ease;
+        }
+
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%239CB6D7' fill-opacity='0.1'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z'%3E%3C/path%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .hero-content {
+            text-align: center;
+            padding: 3rem;
+            background: var(--frost);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            box-shadow: 
+                0 8px 32px rgba(31, 38, 135, 0.15),
+                0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 2rem;
+            position: relative;
+            animation: fadeIn 1.5s ease-out;
+        }
+
+        .logo-container {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            margin: 0 auto 2rem;
+            perspective: 1000px;
+        }
+
+        .logo {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 50%;
+            transform-style: preserve-3d;
+        }
+
+        section {
+            background: var(--frost);
+            border-radius: 20px;
+            padding: 3rem;
+            margin: 3rem 0;
+            box-shadow: 0 8px 32px var(--shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+
+        section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-blue), var(--secondary-lavender), var(--accent-peach));
+        }
+
+        section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 48px var(--shadow);
+        }
+        .problems ul {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 0;
+        }
+
+        .problems li {
+            background: rgba(255, 255, 255, 0.5);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .problems li:hover {
+            transform: translateY(-3px);
+        }
+        .title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 4.5rem;
+            font-weight: 300;
+            color: var(--midnight);
+            margin-bottom: 1rem;
+            opacity: 0;
+            animation: slideUp 1s ease-out forwards 0.5s;
+            background: linear-gradient(135deg, var(--deep-blue), #9B7ADB);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .tagline {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            color: #4A5568;
+            margin-bottom: 2rem;
+            opacity: 0;
+            animation: slideUp 1s ease-out forwards 0.7s;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 4rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: var(--frost);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2));
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .feature-card:hover::before {
+            transform: translateX(100%);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 12px 48px rgba(31, 38, 135, 0.15);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: var(--midnight);
+        }
+
+        .journey-section {
+            padding: 4rem 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .journey-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3rem;
+            margin-bottom: 3rem;
+            color: var(--midnight);
+        }
+
+        .journey-steps {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 2rem;
+            flex-wrap: wrap;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .step-card {
+            flex: 1;
+            min-width: 250px;
+            max-width: 350px;
+            background: var(--frost);
+            padding: 2rem;
+            border-radius: 20px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .step-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 48px rgba(31, 38, 135, 0.15);
+        }
+
+        .step-number {
+            font-size: 4rem;
+            font-family: 'Cormorant Garamond', serif;
+            color: rgba(134, 182, 232, 0.2);
+            position: absolute;
+            top: -20px;
+            left: 20px;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .footer {
+            text-align: center;
+            padding: 3rem;
+            background: var(--frost);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .footer::before {
+            content: '❄️';
+            position: absolute;
+            animation: snowfall 3s linear infinite;
+            font-size: 1.5rem;
+            left: 30%;
+        }
+
+        .footer::after {
+            content: '❄️';
+            position: absolute;
+            animation: snowfall 3s linear infinite 1.5s;
+            font-size: 1.5rem;
+            right: 30%;
+        }
+
+        @keyframes snowfall {
+            0% { transform: translateY(-20px) rotate(0deg); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(100px) rotate(360deg); opacity: 0; }
+        }
+
+        @media (max-width: 768px) {
+            .title {
+                font-size: 3rem;
+            }
+            
+            .tagline {
+                font-size: 1.5rem;
+            }
+            
+            .hero-content {
+                padding: 2rem;
+                margin: 1rem;
+            }
+            
+            .feature-grid {
+                padding: 2rem 1rem;
+            }
+            
+            .journey-steps {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .step-card {
+                width: 100%;
+            }
+        }
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0 1rem;
+            }
+
+            .nav-toggle {
+                display: block;
+            }
+
+            .nav-menu {
+                position: fixed;
+                top: var(--nav-height);
+                left: 0;
+                right: 0;
+                background: var(--frost);
+                padding: 1rem;
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+                transform: translateY(-100%);
+                transition: transform 0.3s ease;
+                backdrop-filter: blur(10px);
+            }
+
+            .nav-menu.active {
+                transform: translateY(0);
+            }
+
+            .about,
+            .problems {
+                padding: 2rem;
+                margin: 2rem 1rem;
+                border-radius: 20px;
+            }
+
+            .problems ul {
+                grid-template-columns: 1fr;
+            }
+
+            .about h2,
+            .problems h2 {
+                font-size: 2rem;
+            }
+
+            .about p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="{{ url_for('nest') }}" class="nav-brand">Veristasia</a>
+        <button class="nav-toggle">☰</button>
+        <ul class="nav-menu">
+            <li><a href="{{ url_for('nest') }}" class="nav-link">Nest</a></li>
+            <li><a href="{{ url_for('stream') }}" class="nav-link">Stream</a></li>
+            <li><a href="{{ url_for('verse') }}" class="nav-link">Verse</a></li>
+            <li><a href="{{ url_for('stash') }}" class="nav-link">Stash</a></li>
+            <li><a href="{{ url_for('haven') }}" class="nav-link">Haven</a></li>
+            <li><a href="{{ url_for('origin') }}" class="nav-link active">Origin</a></li>
+            <li><a href="{{ url_for('scout') }}" class="nav-link">Scout</a></li>
+        </ul>
+    </nav>
+    <div class="scroll-progress"></div>
+    
+    <section class="hero">
+        <div class="hero-content">
+            <div class="logo-container">
+                <img src="static/images/Veristasia-logo.png" alt="Veristasia Logo" class="logo">
+            </div>
+            <h1 class="title">Veristasia</h1>
+            <p class="tagline">Mind Unfolded, Soul Unveiled</p>
+        </div>
+    </section>
+
+    <section class="about">
+        <h2>What is Veristasia?</h2>
+        <p>
+            Veristasia is a joyful, themed platform designed to empower creators by providing an all-in-one creative workspace. 
+            Inspired by the calm and focus of penguins navigating icy terrains, Veristasia helps you glide seamlessly through 
+            your creative journey.
+        </p>
+    </section>
+
+    <section class="problems">
+        <h2>What Issues Does Veristasia Solve?</h2>
+        <ul>
+            <li><strong>Tool Fragmentation:</strong> Creators no longer need 4-7 apps for writing, resource management, and publishing. Veristasia unifies these tools into one seamless platform.</li>
+            <li><strong>AI Ethics:</strong> We prioritize user-controlled AI training and transparent content origin. No scraped data or copyright violations here.</li>
+            <li><strong>Creative Burnout:</strong> Built-in mindfulness prompts and focus modes help reduce mental fatigue caused by constant app switching.</li>
+            <li><strong>UX Experience:</strong> Our penguin-themed interface reduces cognitive load and makes the creative process delightful.</li>
+            <li><strong>Content Diversity:</strong> Create blogs, poetry, resources, and more—all within one platform.</li>
+            <li><strong>Data Ownership:</strong> You own your content. Always.</li>
+        </ul>
+    </section>
+
+    
+    <section class="feature-grid">
+        <div class="feature-card">
+            <div class="feature-icon">🧘‍♀️</div>
+            <h3 class="feature-title">Mindful Creation</h3>
+            <p>Transform your creative process with our penguin-inspired zen workspace. Experience flow states naturally.</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">🐧</div>
+            <h3 class="feature-title">Glacial Focus</h3>
+            <p>Like penguins gliding through arctic waters, navigate your projects with pristine clarity and purpose.</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">🌟</div>
+            <h3 class="feature-title">Soul-Centric AI</h3>
+            <p>Ethical AI that respects your creative spirit. Train it with your essence, not scraped data.</p>
+        </div>
+    </section>
+
+    <section class="journey-section">
+        <h2 class="journey-title">Your Creative Journey</h2>
+        <div class="journey-steps">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <h3>Enter the Glacier</h3>
+                <p>Step into a space where creativity flows as naturally as arctic streams. Your journey begins with clarity.</p>
+            </div>
+            
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <h3>Embrace the Flow</h3>
+                <p>Like penguins in their element, find your rhythm in our integrated creative ecosystem.</p>
+            </div>
+            
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <h3>Soar Higher</h3>
+                <p>Let your ideas take flight with AI that understands and amplifies your unique creative voice.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        Made with ❄️ by Pjain_1508 | February 12, 2025
+    </footer>
+
+    <script>
+        const navToggle = document.querySelector('.nav-toggle');
+        const navMenu = document.querySelector('.nav-menu');
+
+        navToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.navbar')) {
+                navMenu.classList.remove('active');
+            }
+        });
+
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section').forEach(section => {
+            observer.observe(section);
+        });
+    </script>
+</body>
+</html>

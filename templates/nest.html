@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Veristasia - Mind Unfolded, Soul Unveiled{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: linear-gradient(rgba(201, 227, 248, 0.1), rgba(168, 230, 207, 0.1));
+        border-radius: 20px;
+        margin-bottom: 4rem;
+    }
+
+    .hero h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 3.5rem;
+        margin-bottom: 1rem;
+        color: var(--midnight);
+    }
+
+    .hero p {
+        font-size: 1.2rem;
+        max-width: 600px;
+        margin: 0 auto 2rem;
+        color: var(--midnight);
+    }
+
+    .cta-button {
+        display: inline-block;
+        padding: 1rem 2rem;
+        background: linear-gradient(135deg, var(--deep-blue), var(--aurora-green));
+        color: white;
+        text-decoration: none;
+        border-radius: 30px;
+        font-weight: 500;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .cta-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .about {
+        text-align: center;
+        padding: 4rem 2rem;
+        margin-bottom: 4rem;
+    }
+
+    .about h2 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.5rem;
+        margin-bottom: 1.5rem;
+        color: var(--midnight);
+    }
+
+    .about p {
+        max-width: 800px;
+        margin: 0 auto;
+        font-size: 1.1rem;
+    }
+
+    .recent-content {
+        padding: 2rem 0;
+    }
+
+    .recent-content h2 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.5rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .content-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        padding: 0 1rem;
+    }
+
+    .content-card {
+        background: var(--frost);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 2rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .content-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .content-card h3 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+        color: var(--midnight);
+    }
+
+    .content-card p {
+        flex-grow: 1;
+        margin-bottom: 1.5rem;
+    }
+
+    .content-card a {
+        display: inline-block;
+        padding: 0.8rem 1.5rem;
+        background: linear-gradient(135deg, var(--deep-blue), var(--aurora-green));
+        color: white;
+        text-decoration: none;
+        border-radius: 25px;
+        font-weight: 500;
+        transition: transform 0.3s ease;
+        text-align: center;
+    }
+
+    .content-card a:hover {
+        transform: translateX(5px);
+    }
+
+    @media (max-width: 768px) {
+        .hero {
+            padding: 2rem 1rem;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+        }
+
+        .content-cards {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h1>Welcome to Veristasia</h1>
+    <p>Your all-in-one creative workspace for writing, poetry, and resource management.</p>
+    <a href="{{ url_for('stream') }}" class="cta-button">Explore Blogs</a>
+</div>
+
+<div class="about">
+    <h2>What is Veristasia?</h2>
+    <p>Veristasia is a joyful platform designed to empower creators by unifying tools for writing, poetry, and resource management into one seamless experience.</p>
+</div>
+
+<div class="recent-content">
+    <h2>Recently Published</h2>
+    <div class="content-cards">
+        {% for item in recent_items %}
+        <div class="content-card">
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.description }}</p>
+            <a href="{{ item.link }}">Read More →</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Intersection Observer for fade-in animations
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.hero, .about, .content-card').forEach(element => {
+        element.style.opacity = '0';
+        element.style.transform = 'translateY(20px)';
+        element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(element);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,92 @@
+/* General Styling */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f8ff; 
+}
+
+.container {
+    max-width: 900px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Header Styling */
+.header {
+    text-align: center;
+}
+
+.logo {
+    width: 100px;
+}
+
+.subtitle {
+    color: #666666;
+}
+
+/* Section Styling */
+.about,
+.problems,
+.differentiators,
+.key-differentiators {
+    margin-top: 30px;
+}
+
+.about h2,
+.problems h2,
+.differentiators h2,
+.key-differentiators h2 {
+    color: #333333;
+}
+
+ul {
+    list-style-type: disc;
+    margin-left: 20px;
+}
+
+/* Table Styling */
+.comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.comparison-table th,
+.comparison-table td {
+    border: 1px solid #cccccc;
+    padding: 10px;
+}
+
+.comparison-table th {
+    background-color: #f0f8ff; /* Glacier-inspired header */
+}
+
+.comparison-table td {
+    text-align: left;
+}
+
+/* Footer Styling */
+.footer {
+    text-align: center;
+    margin-top: 50px;
+    font-size: 0.9rem;
+    color: #888888;
+}
+
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    header h1 {
+        font-size: 2rem;
+    }
+}

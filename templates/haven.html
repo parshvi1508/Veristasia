@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+
+{% block title %}Haven - Your Personal Dashboard{% endblock %}
+
+{% block content %}
+<div class="haven-container">
+    <h1>Welcome to Your Haven</h1>
+
+    <!-- User Profile Section -->
+    <section class="profile-section">
+        <h2>Your Profile</h2>
+        <div class="profile-info">
+            <img src="{{ url_for('static', filename='images/default-avatar.png') }}" alt="Avatar" class="avatar">
+            <div class="profile-details">
+                <h3>Guest User</h3>
+                <p>Welcome to Veristasia! This is a demo version.</p>
+                <div class="social-links">
+                    <a href="#" target="_blank"><i class="fas fa-globe"></i> Portfolio</a>
+                    <a href="#" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+                    <a href="#" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+                </div>
+                <button onclick="editProfile()" class="btn btn-primary">Edit Profile</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Content Creation Section -->
+    <section class="content-creation">
+        <h2>Create Content</h2>
+        <div class="creation-buttons">
+            <button onclick="openEditor('stream')" class="btn btn-primary">Write Blog</button>
+            <button onclick="openEditor('verse')" class="btn btn-primary">Write Poetry</button>
+            <button onclick="openEditor('stash')" class="btn btn-primary">Add Resource</button>
+        </div>
+    </section>
+
+    <!-- Drafts Section -->
+    <section class="drafts-section">
+        <h2>Your Drafts</h2>
+        <div class="drafts-list">
+            <div class="draft-item">
+                <h3>Sample Draft</h3>
+                <p>Type: Blog</p>
+                <p>Last edited: February 13, 2025</p>
+                <button onclick="editDraft('1')" class="btn btn-secondary">Edit</button>
+                <button onclick="deleteDraft('1')" class="btn btn-danger">Delete</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Published Content Section -->
+    <section class="published-content">
+        <h2>Your Published Content</h2>
+        <div class="content-list">
+            <div class="content-item">
+                <h3>Welcome Post</h3>
+                <p>Type: Blog</p>
+                <p>Published on: February 13, 2025</p>
+                <p>Views: 0</p>
+                <p>Likes: 0</p>
+                <button onclick="editContent('1')" class="btn btn-secondary">Edit</button>
+            </div>
+        </div>
+    </section>
+</div>
+<!-- Floating Todo List -->
+<div id="todo-list" class="todo-container">
+    <h3>Todo List <button onclick="toggleTodoList()" class="btn btn-sm btn-secondary">Minimize</button></h3>
+    <div class="todo-content">
+        <div class="todo-filters">
+            <select onchange="filterTodos()">
+                <option value="all">All</option>
+                <option value="pending">Pending</option>
+                <option value="completed">Completed</option>
+            </select>
+        </div>
+        <ul id="todo-items">
+            {% for todo in todos %}
+            <li>
+                <input type="checkbox" {% if todo.completed %}checked{% endif %} onchange="updateTodo('{{ todo.id }}')">
+                <span>{{ todo.task }}</span>
+                <button onclick="deleteTodo('{{ todo.id }}')" class="btn btn-sm btn-danger">Delete</button>
+            </li>
+            {% endfor %}
+        </ul>
+        <form onsubmit="addTodo(event)">
+            <input type="text" id="new-todo" placeholder="New task...">
+            <button type="submit" class="btn btn-sm btn-primary">Add</button>
+        </form>
+    </div>
+</div>
+
+<!-- Screen Time Reminder -->
+<div id="screen-time-reminder" class="reminder-container" style="display: none;">
+    <p>You've been on Veristasia for a while. Take a short break!</p>
+    <button onclick="dismissReminder()" class="btn btn-sm btn-secondary">Dismiss</button>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdn.tiny.cloud/1/your-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+    function openEditor(type) {
+        // Open TinyMCE editor for the specified content type
+        let editorConfig = {
+            selector: '#content-editor',
+            height: 500,
+            plugins: [
+                'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                'insertdatetime', 'media', 'table', 'help', 'wordcount'
+            ],
+            toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help'
+        };
+
+        // Customize editor based on content type
+        if (type === 'verse') {
+            editorConfig.content_style = 'body { font-family: Georgia, serif; }';
+        } else if (type === 'stash') {
+            editorConfig.plugins.push('link');
+            editorConfig.toolbar += ' | link';
+        }
+
+        tinymce.init(editorConfig);
+
+        // Show editor modal
+        document.getElementById('editor-modal').style.display = 'block';
+    }
+
+    // haven.js
+document.addEventListener('DOMContentLoaded', function() {
+    initializeEditors();
+    setupTodoList();
+    setupScreenTimeReminder();
+});
+
+function initializeEditors() {
+    const editorConfig = {
+        height: 500,
+        plugins: [
+            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+            'insertdatetime', 'media', 'table', 'help', 'wordcount'
+        ],
+        toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
+        content_style: 'body { font-family: Inter, sans-serif; }',
+        setup: function(editor) {
+            editor.on('change', function() {
+                autoSaveDraft(editor.getContent());
+            });
+        }
+    };
+
+    window.openEditor = function(type) {
+        const modal = document.createElement('div');
+        modal.className = 'editor-modal';
+        modal.id = 'editor-modal';
+        
+        const content = `
+            <div class="editor-content">
+                <h2>${type.charAt(0).toUpperCase() + type.slice(1)} Editor</h2>
+                <input type="text" id="content-title" placeholder="Title" class="form-control mb-3">
+                <textarea id="content-editor"></textarea>
+                <div class="button-group mt-3">
+                    <button onclick="saveContent('${type}')" class="btn btn-primary">Publish</button>
+                    <button onclick="saveDraft('${type}')" class="btn btn-secondary">Save Draft</button>
+                    <button onclick="closeEditor()" class="btn btn-danger">Close</button>
+                </div>
+            </div>
+        `;
+        
+        modal.innerHTML = content;
+        document.body.appendChild(modal);
+        
+        const customConfig = {...editorConfig};
+        if (type === 'verse') {
+            customConfig.content_style = 'body { font-family: Georgia, serif; }';
+        }
+        
+        tinymce.init({
+            ...customConfig,
+            selector: '#content-editor'
+        });
+    };
+}
+
+async function saveContent(type) {
+    const title = document.getElementById('content-title').value;
+    const content = tinymce.activeEditor.getContent();
+    
+    try {
+        const response = await fetch(`/${type}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ title, content })
+        });
+        
+        if (response.ok) {
+            closeEditor();
+            location.reload();
+        }
+    } catch (error) {
+        console.error('Error saving content:', error);
+    }
+}
+
+function setupTodoList() {
+    const todoList = {
+        items: JSON.parse(localStorage.getItem('todos') || '[]'),
+        
+        add: function(task) {
+            this.items.push({
+                id: Date.now(),
+                task,
+                completed: false
+            });
+            this.save();
+            this.render();
+        },
+        
+        toggle: function(id) {
+            const todo = this.items.find(item => item.id === id);
+            if (todo) {
+                todo.completed = !todo.completed;
+                this.save();
+                this.render();
+            }
+        },
+        
+        delete: function(id) {
+            this.items = this.items.filter(item => item.id !== id);
+            this.save();
+            this.render();
+        },
+        
+        save: function() {
+            localStorage.setItem('todos', JSON.stringify(this.items));
+        },
+        
+        render: function() {
+            const list = document.getElementById('todo-items');
+            list.innerHTML = this.items.map(todo => `
+                <li>
+                    <input type="checkbox" ${todo.completed ? 'checked' : ''} 
+                           onchange="todoList.toggle(${todo.id})">
+                    <span style="${todo.completed ? 'text-decoration: line-through' : ''}">${todo.task}</span>
+                    <button onclick="todoList.delete(${todo.id})" class="btn btn-sm btn-danger">Delete</button>
+                </li>
+            `).join('');
+        }
+    };
+    
+    window.todoList = todoList;
+    todoList.render();
+}
+
+function setupScreenTimeReminder() {
+    let reminderShown = false;
+    
+    setInterval(() => {
+        if (!reminderShown) {
+            const reminder = document.getElementById('screen-time-reminder');
+            reminder.style.display = 'block';
+            reminderShown = true;
+            
+            setTimeout(() => {
+                reminder.style.display = 'none';
+                reminderShown = false;
+            }, 30000); // Hide after 30 seconds
+        }
+    }, 7200000); // Check every 2 hours
+}
+
+function closeEditor() {
+    const modal = document.getElementById('editor-modal');
+    if (modal) {
+        tinymce.activeEditor.destroy();
+        modal.remove();
+    }
+}
+
+// Auto-save drafts every 30 seconds
+let autoSaveTimeout;
+function autoSaveDraft(content) {
+    clearTimeout(autoSaveTimeout);
+    autoSaveTimeout = setTimeout(() => {
+        const title = document.getElementById('content-title').value;
+        localStorage.setItem('draft_' + Date.now(), JSON.stringify({
+            title,
+            content,
+            timestamp: new Date().toISOString()
+        }));
+    }, 30000);
+}
+    
+
+    // Screen time reminder
+    setTimeout(() => {
+        document.getElementById('screen-time-reminder').style.display = 'block';
+    }, 120 * 60 * 1000); // Show reminder after 120 minutes
+</script>
+{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+{% endblock %}

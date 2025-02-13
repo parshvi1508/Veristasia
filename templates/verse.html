@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Veristasia - Mind Unfolded, Soul Unveiled</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Montserrat:wght@300;400;500;600&display=swap');
+
+        :root {
+            --primary-blue: #C9E3F8;
+            --deep-blue: #86B6E8;
+            --aurora-green: #A8E6CF;
+            --midnight: #2D3748;
+            --frost: rgba(255, 255, 255, 0.95);
+            --gradient-bg: linear-gradient(135deg, #F7FAFC 0%, #E3F2FD 50%, #BBDEFB 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        .navbar {
+            font-family: 'Cormorant Garamond', serif;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--nav-height);
+            background: var(--frost);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-brand {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--midnight);
+            text-decoration: none;
+            color: var(--midnight);
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--midnight);
+            font-weight: 500;
+            position: relative;
+            padding: 0.5rem 1rem;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--deep-blue), var(--aurora-green));
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .nav-link.active {
+            color: var(--deep-blue);
+        }
+
+        .nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--midnight);
+        }
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0 1rem;
+            }
+
+            .nav-toggle {
+                display: block;
+            }
+
+            .nav-menu {
+                position: fixed;
+                top: var(--nav-height);
+                left: 0;
+                right: 0;
+                background: var(--frost);
+                padding: 1rem;
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+                transform: translateY(-100%);
+                transition: transform 0.3s ease;
+                backdrop-filter: blur(10px);
+            }
+
+            .nav-menu.active {
+                transform: translateY(0);
+            }
+
+            .about,
+            .problems {
+                padding: 2rem;
+                margin: 2rem 1rem;
+                border-radius: 20px;
+            }
+
+            .problems ul {
+                grid-template-columns: 1fr;
+            }
+
+            .about h2,
+            .problems h2 {
+                font-size: 2rem;
+            }
+
+            .about p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="{{ url_for('nest') }}" class="nav-brand">Veristasia</a>
+        <button class="nav-toggle">☰</button>
+        <ul class="nav-menu">
+            <li><a href="{{ url_for('nest') }}" class="nav-link">Nest</a></li>
+            <li><a href="{{ url_for('stream') }}" class="nav-link">Stream</a></li>
+            <li><a href="{{ url_for('verse') }}" class="nav-link">Verse</a></li>
+            <li><a href="{{ url_for('stash') }}" class="nav-link">Stash</a></li>
+            <li><a href="{{ url_for('haven') }}" class="nav-link">Haven</a></li>
+            <li><a href="{{ url_for('origin') }}" class="nav-link active">Origin</a></li>
+            <li><a href="{{ url_for('scout') }}" class="nav-link">Scout</a></li>
+        </ul>
+    </nav>
+   
+    <script>
+        const navToggle = document.querySelector('.nav-toggle');
+        const navMenu = document.querySelector('.nav-menu');
+
+        navToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.navbar')) {
+                navMenu.classList.remove('active');
+            }
+        });
+
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section').forEach(section => {
+            observer.observe(section);
+        });
+    </script>
+</body>
+</html>
