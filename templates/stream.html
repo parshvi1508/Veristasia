@@ -1,101 +1,187 @@
 {% extends "base.html" %}
 
-{% block title %}Stream - Blogs{% endblock %}
+{% block title %}Stream - Published Blogs{% endblock %}
 
 {% block content %}
-<div class="blog-container">
-    <h1>Blogs</h1>
-    <form method="POST" action="{{ url_for('stream') }}" class="blog-form" enctype="multipart/form-data">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        
-        <div class="form-group">
-            <label for="title">Title:</label>
-            <input type="text" id="title" name="title" class="form-control" required>
-        </div>
+<div class="stream-container">
+    <h1>Published Blogs</h1>
 
-        <div class="form-group">
-            <label for="category">Category:</label>
-            <select id="category" name="category" class="form-control" required>
-                <option value="">Select Category</option>
-                <option value="technology">Technology</option>
-                <option value="lifestyle">Lifestyle</option>
-                <option value="travel">Travel</option>
-                <option value="food">Food</option>
-                <option value="other">Other</option>
-            </select>
-        </div>
+    <div class="blog-filter">
+        <input type="text" id="searchBlogs" placeholder="Search blogs..." onkeyup="filterBlogs()">
+        <select id="categoryFilter" onchange="filterBlogs()">
+            <option value="">All Categories</option>
+            {% for category in categories %}
+                <option value="{{ category }}">{{ category }}</option>
+            {% endfor %}
+        </select>
+    </div>
 
-        <div class="form-group">
-            <label for="featured_image">Featured Image:</label>
-            <input type="file" id="featured_image" name="featured_image" class="form-control-file" accept="image/*">
+    <div class="blog-list">
+        {% for blog in blogs %}
+        <div class="blog-item">
+            {% if blog.featured_image %}
+            <img src="{{ blog.featured_image }}" alt="{{ blog.title }}" class="blog-image">
+            {% endif %}
+            <h2>{{ blog.title }}</h2>
+            <div class="blog-metadata">
+                <span class="category">{{ blog.category }}</span>
+                <span class="author">By {{ blog.author }}</span>
+                <span class="timestamp">{{ blog.created_at.strftime('%B %d, %Y') }}</span>
+            </div>
+            <div class="blog-content">{{ blog.content | safe | truncate(200) }}</div>
+            <div class="blog-tags">
+                {% for tag in blog.tags %}
+                <span class="tag">{{ tag }}</span>
+                {% endfor %}
+            </div>
+            <div class="blog-actions">
+                <button onclick="likeBlog({{ blog.id }})" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-heart"></i> <span id="likes-{{ blog.id }}">{{ blog.likes }}</span>
+                </button>
+                <a href="{{ url_for('blog_detail', blog_id=blog.id) }}" class="btn btn-sm btn-outline-secondary">Read More</a>
+            </div>
         </div>
-
-        <div class="form-group">
-            <label for="content">Content:</label>
-            <textarea id="content" name="content"></textarea>
-        </div>
-
-        <div class="form-group">
-            <label for="tags">Tags:</label>
-            <input type="text" id="tags" name="tags" class="form-control" 
-                   placeholder="e.g., programming, web, python">
-        </div>
-
-        <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Publish</button>
-            <button type="button" class="btn btn-secondary" onclick="saveDraft()">Save as Draft</button>
-        </div>
-    </form>
-
-    <!-- ... existing blog list and other content ... -->
+        {% endfor %}
+    </div>
 </div>
+
+<style>
+/* Stream Page Styles */
+.stream-container {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.blog-filter {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.blog-filter input,
+.blog-filter select {
+    padding: 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    flex: 1;
+}
+
+.blog-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.blog-item {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.blog-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.blog-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.blog-item h2 {
+    font-size: 1.5rem;
+    margin: 1rem;
+}
+
+.blog-metadata {
+    padding: 0 1rem;
+    color: #666;
+    font-size: 0.9rem;
+    display: flex;
+    gap: 1rem;
+}
+
+.blog-content {
+    padding: 1rem;
+    max-height: 150px;
+    overflow: hidden;
+    position: relative;
+}
+
+.blog-tags {
+    padding: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tag {
+    background: #e9ecef;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+.blog-actions {
+    padding: 1rem;
+    border-top: 1px solid #ccc;
+    display: flex;
+    gap: 0.5rem;
+}
+</style>
+
 {% endblock %}
 
 {% block scripts %}
 {{ super() }}
-<script src="https://cdn.tiny.cloud/1/lvhid1eqo3eg5t46a7i84dpk6msr8pgtth5t2td5mbgf4mnc/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
-<script src="{{ url_for('static', filename='js/blog.js') }}"></script>
 <script>
-    tinymce.init({
-        selector: '#content',
-        height: 500,
-        plugins: [
-            'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'image', 
-            'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 
-            'wordcount', 'checklist', 'mediaembed', 'casechange', 'export', 
-            'formatpainter', 'pageembed', 'a11ychecker', 'tinymcespellchecker', 
-            'permanentpen', 'powerpaste', 'advtable', 'advcode', 'editimage', 
-            'advtemplate', 'ai', 'mentions', 'tinycomments', 'tableofcontents', 
-            'footnotes', 'mergetags', 'autocorrect', 'typography', 'inlinecss', 
-            'markdown', 'importword', 'exportword', 'exportpdf'
-        ],
-        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | ' +
-                'link image media table mergetags | addcomment showcomments | ' +
-                'spellcheckdialog a11ycheck typography | align lineheight | ' +
-                'checklist numlist bullist indent outdent | emoticons charmap | removeformat',
-        content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; font-size: 16px; line-height: 1.5; }',
-        images_upload_url: '{{ url_for("upload_image") }}',
-        images_upload_handler: function (blobInfo, success, failure) {
-            let formData = new FormData();
-            formData.append('file', blobInfo.blob(), blobInfo.filename());
+function filterBlogs() {
+    const searchTerm = document.getElementById('searchBlogs').value.toLowerCase();
+    const categoryFilter = document.getElementById('categoryFilter').value.toLowerCase();
+    const blogItems = document.querySelectorAll('.blog-item');
 
-            fetch('{{ url_for("upload_image") }}', {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token() }}'
-                },
-                body: formData
-            })
-            .then(response => response.json())
-            .then(result => success(result.location))
-            .catch(error => failure('Image upload failed'));
-        },
-        tinycomments_mode: 'embedded',
-        tinycomments_author: 'Author',
-        mergetags_list: [
-            { value: 'First.Name', title: 'First Name' },
-            { value: 'Email', title: 'Email' },
-        ]
+    blogItems.forEach(blog => {
+        const title = blog.querySelector('h2').textContent.toLowerCase();
+        const category = blog.querySelector('.category').textContent.toLowerCase();
+        const content = blog.querySelector('.blog-content').textContent.toLowerCase();
+        const tags = Array.from(blog.querySelectorAll('.tag'))
+            .map(tag => tag.textContent.toLowerCase());
+
+        const matchesSearch = searchTerm === '' || 
+            title.includes(searchTerm) || 
+            content.includes(searchTerm) ||
+            tags.some(tag => tag.includes(searchTerm));
+
+        const matchesCategory = categoryFilter === '' || category === categoryFilter;
+
+        blog.style.display = (matchesSearch && matchesCategory) ? 'block' : 'none';
     });
+}
+
+function likeBlog(blogId) {
+    fetch(`/like-blog/${blogId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const likesElement = document.getElementById(`likes-${blogId}`);
+            likesElement.textContent = data.likes;
+            likesElement.parentElement.classList.toggle('liked');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error updating like status');
+    });
+}
 </script>
 {% endblock %}
