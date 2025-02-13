@@ -2,6 +2,10 @@ from flask import Flask, render_template, request, redirect, url_for
 from dotenv import load_dotenv
 import os
 from supabase import create_client
+from flask_wtf.csrf import CSRFProtect
+
+from groq import Groq
+from flask_socketio import SocketIO
 load_dotenv()
 
 supabase_url = os.getenv("SUPABASE_URL")
@@ -9,15 +13,32 @@ supabase_key = os.getenv("SUPABASE_KEY")
 supabase = create_client(supabase_url, supabase_key)
 
 app = Flask(__name__)
+socketio = SocketIO(app)
+groq_client = Groq(api_key=os.getenv("YOUR_GROQ_API_KEY"))
 
 
-from flask_wtf.csrf import CSRFProtect
-
-app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 csrf = CSRFProtect(app)
 
 
+
+
+
+@socketio.on('send_message')
+def handle_message(data):
+    user_message = data['message']
+    
+    # Call Groq API
+    response = groq_client.chat.completions.create(
+        messages=[
+            {"role": "system", "content": "You are Muse, a helpful chatbot."},
+            {"role": "user", "content": user_message}
+        ],
+        model="mixtral-8x7b-32768"
+    )
+    
+    bot_response = response.choices[0].message.content
+    socketio.emit('receive_message', {'message': bot_response})
 @app.route('/')
 def nest():
     recent_blogs = supabase.table('stream').select('title', 'content').order('created_at', desc=True).limit(3).execute()
