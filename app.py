@@ -43,25 +43,22 @@ def nest():
   
 @app.route('/stream')
 def stream():
-    # Fetch only published blog posts
     blogs = supabase.table('stream').select('*').eq('status', 'published').order('created_at', desc=True).execute()
     return render_template('stream.html', blogs=blogs.data)
 
 @app.route('/verse')
 def verse():
-    # Fetch only published verse entries
     verses = supabase.table('verse').select('*').eq('status', 'published').order('created_at', desc=True).execute()
     return render_template('verse.html', verses=verses.data)
 
 @app.route('/stash')
 def stash():
-    # Fetch only published stash entries
     stashes = supabase.table('stash').select('*').eq('status', 'published').order('created_at', desc=True).execute()
     return render_template('stash.html', stashes=stashes.data)
 
 @app.route('/muse')
 def muse():
-    return render_template('muse.html')  
+    return render_template('muse.html')
 
 @app.route('/haven', methods=['GET', 'POST'])
 def haven():
@@ -69,30 +66,41 @@ def haven():
         content_type = request.form.get('content_type')
         title = request.form.get('title')
         content = request.form.get('content')
-        status = request.form.get('status')  # 'draft' or 'published'
+        status = request.form.get('status', 'draft')  # Default to draft if not specified
 
-        # Insert content into Supabase based on content type
         try:
+            data = {
+                'title': title,
+                'status': status
+            }
+            
             if content_type == 'stream':
+                data['content'] = content
                 table_name = 'stream'
             elif content_type == 'verse':
+                data['poem'] = content  # Note: Verse table uses 'poem' instead of 'content'
                 table_name = 'verse'
             elif content_type == 'stash':
+                data['notes'] = content  # Note: Stash table uses 'notes' instead of 'content'
+                data['resource_name'] = title
+                data['category'] = request.form.get('category', '')  # Add category for stash
                 table_name = 'stash'
             else:
                 return "Invalid content type", 400
 
-            supabase.table(table_name).insert({
-                'title': title,
-                'content': content,
-                'status': status,
-                # Add author_id when authentication is implemented
-            }).execute()
+            supabase.table(table_name).insert(data).execute()
+            
+            # Update Haven table with new counts
+            if status == 'draft':
+                supabase.table('haven').update({'draft_count': supabase.raw('draft_count + 1')}).execute()
+            else:
+                supabase.table('haven').update({'post_count': supabase.raw('post_count + 1')}).execute()
+                
             return redirect(url_for('haven'))
         except Exception as e:
             return str(e), 500
 
-    # Fetch drafts and published content for the user
+    # Fetch drafts and published content
     drafts_stream = supabase.table('stream').select('*').eq('status', 'draft').order('created_at', desc=True).execute()
     drafts_verse = supabase.table('verse').select('*').eq('status', 'draft').order('created_at', desc=True).execute()
     drafts_stash = supabase.table('stash').select('*').eq('status', 'draft').order('created_at', desc=True).execute()
@@ -101,32 +109,41 @@ def haven():
     published_verse = supabase.table('verse').select('*').eq('status', 'published').order('created_at', desc=True).execute()
     published_stash = supabase.table('stash').select('*').eq('status', 'published').order('created_at', desc=True).execute()
 
-    todos = supabase.table('todos').select('*').order('created_at', desc=True).execute()
     return render_template('haven.html', 
-                           drafts_stream=drafts_stream.data, 
-                           drafts_verse=drafts_verse.data, 
-                           drafts_stash=drafts_stash.data,
-                           published_stream=published_stream.data,
-                           published_verse=published_verse.data,
-                           published_stash=published_stash.data,
-                           todos=todos.data)
+                         drafts_stream=drafts_stream.data,
+                         drafts_verse=drafts_verse.data,
+                         drafts_stash=drafts_stash.data,
+                         published_stream=published_stream.data,
+                         published_verse=published_verse.data,
+                         published_stash=published_stash.data)
 
-@app.route('/origin', methods=['GET', 'POST'])
-def origin():
-    return render_template('origin.html')
 @app.route('/scout', methods=['GET'])
 def scout():
     query = request.args.get('query', '')
     content_type = request.args.get('content_type', 'all')
 
     try:
+        # Log the search query
+        supabase.table('scout').insert({
+            'search_query': query,
+            'results': None  #can store results count or relevant info here
+        }).execute()
+
         if content_type in ['stream', 'verse', 'stash']:
-            results = (supabase.table(content_type)
-                      .select('*')
-                      .eq('status', 'published')
-                      .ilike('title', f'%{query}%')
-                      .execute()
-                      .data)
+            if content_type == 'stash':
+                results = (supabase.table(content_type)
+                          .select('*')
+                          .eq('status', 'published')
+                          .ilike('resource_name', f'%{query}%')
+                          .execute()
+                          .data)
+            else:
+                results = (supabase.table(content_type)
+                          .select('*')
+                          .eq('status', 'published')
+                          .ilike('title', f'%{query}%')
+                          .execute()
+                          .data)
         else:
             # Search across all content types
             stream_results = (supabase.table('stream')
@@ -144,7 +161,7 @@ def scout():
             stash_results = (supabase.table('stash')
                            .select('*')
                            .eq('status', 'published')
-                           .ilike('title', f'%{query}%')
+                           .ilike('resource_name', f'%{query}%')
                            .execute()
                            .data)
             
@@ -162,7 +179,10 @@ def scout():
     
     except Exception as e:
         return f"Search error: {str(e)}", 500
-    
      
+     
+@app.route('/origin')
+def origin():
+    return render_template('origin.html')
 if __name__ == '__main__':
     app.run(debug=True)

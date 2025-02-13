@@ -1,189 +1,151 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Veristasia - Mind Unfolded, Soul Unveiled</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Montserrat:wght@300;400;500;600&display=swap');
+{% extends "base.html" %}
 
-        :root {
-            --primary-blue: #C9E3F8;
-            --deep-blue: #86B6E8;
-            --aurora-green: #A8E6CF;
-            --midnight: #2D3748;
-            --frost: rgba(255, 255, 255, 0.95);
-            --gradient-bg: linear-gradient(135deg, #F7FAFC 0%, #E3F2FD 50%, #BBDEFB 100%);
-        }
+{% block title %}Scout - Search & Filters{% endblock %}
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        .navbar {
-            font-family: 'Cormorant Garamond', serif;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: var(--nav-height);
-            background: var(--frost);
-            backdrop-filter: blur(10px);
-            z-index: 1000;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 2rem;
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-        }
+{% block content %}
+<div class="scout-container">
+    <h1>Explore the Veristasia Universe</h1>
+    <p class="tagline">Dive deep and discover hidden gems across all creative corners.</p>
 
-        .nav-brand {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--midnight);
-            text-decoration: none;
-            color: var(--midnight);
-        }
+    <!-- Search and Filter Form -->
+    <form method="GET" action="{{ url_for('scout') }}" class="search-form">
+        <input type="text" name="query" placeholder="Search..." value="{{ query }}" class="search-input">
+        <select name="content_type" class="content-type-select">
+            <option value="all">All Content</option>
+            <option value="stream" {% if content_type == 'stream' %}selected{% endif %}>Blogs</option>
+            <option value="verse" {% if content_type == 'verse' %}selected{% endif %}>Verse</option>
+            <option value="stash" {% if content_type == 'stash' %}selected{% endif %}>Stash</option>
+        </select>
+        <button type="submit" class="search-button">Scout</button>
+    </form>
 
-        .nav-menu {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-
-        .nav-link {
-            text-decoration: none;
-            color: var(--midnight);
-            font-weight: 500;
-            position: relative;
-            padding: 0.5rem 1rem;
-            transition: color 0.3s ease;
-        }
-
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: linear-gradient(90deg, var(--deep-blue), var(--aurora-green));
-            transition: width 0.3s ease;
-        }
-
-        .nav-link:hover::after {
-            width: 100%;
-        }
-
-        .nav-link.active {
-            color: var(--deep-blue);
-        }
-
-        .nav-toggle {
-            display: none;
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--midnight);
-        }
-        @media (max-width: 768px) {
-            .navbar {
-                padding: 0 1rem;
-            }
-
-            .nav-toggle {
-                display: block;
-            }
-
-            .nav-menu {
-                position: fixed;
-                top: var(--nav-height);
-                left: 0;
-                right: 0;
-                background: var(--frost);
-                padding: 1rem;
-                flex-direction: column;
-                align-items: center;
-                gap: 1rem;
-                transform: translateY(-100%);
-                transition: transform 0.3s ease;
-                backdrop-filter: blur(10px);
-            }
-
-            .nav-menu.active {
-                transform: translateY(0);
-            }
-
-            .about,
-            .problems {
-                padding: 2rem;
-                margin: 2rem 1rem;
-                border-radius: 20px;
-            }
-
-            .problems ul {
-                grid-template-columns: 1fr;
-            }
-
-            .about h2,
-            .problems h2 {
-                font-size: 2rem;
-            }
-
-            .about p {
-                font-size: 1rem;
-            }
-        }
-    </style>
-</head>
-<body>
-    <nav class="navbar">
-        <a href="{{ url_for('nest') }}" class="nav-brand">Veristasia</a>
-        <button class="nav-toggle">☰</button>
-        <ul class="nav-menu">
-            <li><a href="{{ url_for('nest') }}" class="nav-link">Nest</a></li>
-            <li><a href="{{ url_for('stream') }}" class="nav-link">Stream</a></li>
-            <li><a href="{{ url_for('verse') }}" class="nav-link">Verse</a></li>
-            <li><a href="{{ url_for('stash') }}" class="nav-link">Stash</a></li>
-            <li><a href="{{ url_for('haven') }}" class="nav-link">Haven</a></li>
-            <li><a href="{{ url_for('origin') }}" class="nav-link active">Origin</a></li>
-            <li><a href="{{ url_for('scout') }}" class="nav-link">Scout</a></li>
+    <!-- Results Section -->
+    <div class="results-section">
+        {% if results %}
+        <h2>Results for "{{ query }}"</h2>
+        <ul class="results-list">
+            {% for result in results %}
+                <li class="result-item">
+                    <h3>{{ result.title }}</h3>
+                    <p class="result-type">Type: {{ result.content_type }}</p>
+                    <p class="result-content">{{ result.content | truncate(200, True) }}</p>
+                    <a href="{{ url_for(result.content_type) }}" class="result-link">Read More</a>
+                </li>
+            {% endfor %}
         </ul>
-    </nav>
-    <script>
-        const navToggle = document.querySelector('.nav-toggle');
-        const navMenu = document.querySelector('.nav-menu');
+        {% else %}
+        <p class="no-results">No results found for "{{ query }}".</p>
+        {% endif %}
+    </div>
+</div>
 
-        navToggle.addEventListener('click', () => {
-            navMenu.classList.toggle('active');
-        });
+<style>
+/* General Styles */
+.scout-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 2rem;
+    font-family: 'Inter', sans-serif;
+    color: #333;
+    background-color: #f7f7f7;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.navbar')) {
-                navMenu.classList.remove('active');
-            }
-        });
+.scout-container h1 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
 
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
+.scout-container .tagline {
+    text-align: center;
+    color: #777;
+    margin-bottom: 2rem;
+}
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
-            });
-        }, observerOptions);
+/* Search Form */
+.search-form {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
 
-        document.querySelectorAll('section').forEach(section => {
-            observer.observe(section);
-        });
-    </script>
-</body>
-</html>
+.search-input,
+.content-type-select {
+    padding: 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    flex: 1;
+}
+
+.search-button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    background-color: #3498db;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.search-button:hover {
+    background-color: #2980b9;
+}
+
+/* Results Section */
+.results-section h2 {
+    margin-bottom: 1.5rem;
+    color: #34495e;
+}
+
+.results-list {
+    list-style: none;
+    padding: 0;
+}
+
+.result-item {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.result-item h3 {
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+}
+
+.result-item .result-type {
+    font-size: 0.9rem;
+    color: #777;
+    margin-bottom: 0.5rem;
+}
+
+.result-item .result-content {
+    color: #555;
+    line-height: 1.6;
+}
+
+.result-item .result-link {
+    display: inline-block;
+    margin-top: 1rem;
+    color: #3498db;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.result-item .result-link:hover {
+    color: #2980b9;
+}
+
+.no-results {
+    font-style: italic;
+    color: #777;
+}
+</style>
+{% endblock %}

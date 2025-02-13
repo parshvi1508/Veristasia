@@ -1,190 +1,321 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Veristasia - Mind Unfolded, Soul Unveiled</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Montserrat:wght@300;400;500;600&display=swap');
+{% extends "base.html" %}
 
-        :root {
-            --primary-blue: #C9E3F8;
-            --deep-blue: #86B6E8;
-            --aurora-green: #A8E6CF;
-            --midnight: #2D3748;
-            --frost: rgba(255, 255, 255, 0.95);
-            --gradient-bg: linear-gradient(135deg, #F7FAFC 0%, #E3F2FD 50%, #BBDEFB 100%);
-        }
+{% block title %}Verse - Poetry & Writing{% endblock %}
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        .navbar {
-            font-family: 'Cormorant Garamond', serif;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: var(--nav-height);
-            background: var(--frost);
-            backdrop-filter: blur(10px);
-            z-index: 1000;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 2rem;
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-        }
+{% block content %}
+<div class="verse-container">
+    <h1>Verse: Your Poetic Haven</h1>
+    <p class="tagline">Where words dance like penguins on ice, creating ripples of emotion.</p>
 
-        .nav-brand {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--midnight);
-            text-decoration: none;
-            color: var(--midnight);
-        }
+    <!-- Poetry Filter -->
+    <div class="poetry-filter">
+        <input type="text" id="searchPoems" placeholder="Search poems..." onkeyup="filterPoems()">
+        <select id="categoryFilter" onchange="filterPoems()">
+            <option value="">All Categories</option>
+            {% for category in categories %}
+                <option value="{{ category }}">{{ category }}</option>
+            {% endfor %}
+        </select>
+    </div>
 
-        .nav-menu {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
+    <!-- Poetry List -->
+    <div class="poetry-list">
+        {% for verse in verses %}
+        <div class="poetry-item"  data-verse-id="{{ verse.id }}">
+            <h3>{{ verse.title }}</h3>
+            <p class="poem">{{ verse.poem | safe }}</p>
+            <div class="verse-metadata">
+                <span class="author">By {{ verse.author }}</span>
+                <span class="timestamp">{{ verse.created_at.strftime('%B %d, %Y') }}</span>
+            </div>
+            <div class="verse-actions">
+                <button onclick="likeVerse({{ verse.id }})" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-heart"></i> <span id="likes-{{ verse.id }}">{{ verse.likes }}</span>
+                </button>
+                <button onclick="showComments({{ verse.id }})" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-comments"></i> Comments
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
 
-        .nav-link {
-            text-decoration: none;
-            color: var(--midnight);
-            font-weight: 500;
-            position: relative;
-            padding: 0.5rem 1rem;
-            transition: color 0.3s ease;
-        }
+<style>
+/* Verse Page Styles */
+.verse-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    font-family: 'Georgia', serif;
+    color: #2d3748;
+    background-color: #f0f8ff; /* Glacier blue background */
+}
 
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: linear-gradient(90deg, var(--deep-blue), var(--aurora-green));
-            transition: width 0.3s ease;
-        }
+.verse-container h1 {
+    color: #1a365d;
+    text-align: center;
+}
 
-        .nav-link:hover::after {
-            width: 100%;
-        }
+.tagline {
+    text-align: center;
+    color: #4a5568;
+    font-style: italic;
+    margin-bottom: 2rem;
+}
 
-        .nav-link.active {
-            color: var(--deep-blue);
-        }
+.poetry-filter {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
 
-        .nav-toggle {
-            display: none;
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--midnight);
-        }
-        @media (max-width: 768px) {
-            .navbar {
-                padding: 0 1rem;
-            }
+.poetry-filter input,
+.poetry-filter select {
+    padding: 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    flex: 1;
+}
 
-            .nav-toggle {
-                display: block;
-            }
+.poetry-list {
+    display: grid;
+    gap: 2rem;
+}
 
-            .nav-menu {
-                position: fixed;
-                top: var(--nav-height);
-                left: 0;
-                right: 0;
-                background: var(--frost);
-                padding: 1rem;
-                flex-direction: column;
-                align-items: center;
-                gap: 1rem;
-                transform: translateY(-100%);
-                transition: transform 0.3s ease;
-                backdrop-filter: blur(10px);
-            }
+.poetry-item {
+    background: white;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
 
-            .nav-menu.active {
-                transform: translateY(0);
-            }
+.poetry-item h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: #2c5282;
+}
 
-            .about,
-            .problems {
-                padding: 2rem;
-                margin: 2rem 1rem;
-                border-radius: 20px;
-            }
+.poem {
+    white-space: pre-line;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
 
-            .problems ul {
-                grid-template-columns: 1fr;
-            }
+.verse-metadata {
+    font-size: 0.9rem;
+    color: #718096;
+    margin-bottom: 1rem;
+}
 
-            .about h2,
-            .problems h2 {
-                font-size: 2rem;
-            }
+.verse-actions {
+    display: flex;
+    gap: 0.5rem;
+}
 
-            .about p {
-                font-size: 1rem;
-            }
-        }
+.btn-outline-primary,
+.btn-outline-secondary {
+    border: 1px solid;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+}
+
+.btn-outline-primary {
+    color: #4299e1;
+    border-color: #4299e1;
+}
+
+.btn-outline-secondary {
+    color: #718096;
+    border-color: #718096;
+}
+<style>
+    /* ...existing styles... */
+    
+    .comments-section {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: #f7fafc;
+        border-radius: 4px;
+    }
+    
+    .comment {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .comment-header {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.875rem;
+        color: #718096;
+        margin-bottom: 0.25rem;
+    }
+    
+    .comment-content {
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+    
+    .add-comment {
+        margin-top: 1rem;
+    }
+    
+    .add-comment textarea {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 4px;
+        margin-bottom: 0.5rem;
+        resize: vertical;
+    }
+    
+    .loading {
+        text-align: center;
+        color: #718096;
+        padding: 1rem;
+    }
+    
+    .error {
+        color: #e53e3e;
+        text-align: center;
+        padding: 1rem;
+    }
     </style>
-</head>
-<body>
-    <nav class="navbar">
-        <a href="{{ url_for('nest') }}" class="nav-brand">Veristasia</a>
-        <button class="nav-toggle">☰</button>
-        <ul class="nav-menu">
-            <li><a href="{{ url_for('nest') }}" class="nav-link">Nest</a></li>
-            <li><a href="{{ url_for('stream') }}" class="nav-link">Stream</a></li>
-            <li><a href="{{ url_for('verse') }}" class="nav-link">Verse</a></li>
-            <li><a href="{{ url_for('stash') }}" class="nav-link">Stash</a></li>
-            <li><a href="{{ url_for('haven') }}" class="nav-link">Haven</a></li>
-            <li><a href="{{ url_for('origin') }}" class="nav-link active">Origin</a></li>
-            <li><a href="{{ url_for('scout') }}" class="nav-link">Scout</a></li>
-        </ul>
-    </nav>
-   
-    <script>
-        const navToggle = document.querySelector('.nav-toggle');
-        const navMenu = document.querySelector('.nav-menu');
+</style>
 
-        navToggle.addEventListener('click', () => {
-            navMenu.classList.toggle('active');
-        });
+{% endblock %}
 
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.navbar')) {
-                navMenu.classList.remove('active');
-            }
-        });
+{% block scripts %}
+{{ super() }}
+<script>
+function filterPoems() {
+    const searchTerm = document.getElementById('searchPoems').value.toLowerCase();
+    const categoryFilter = document.getElementById('categoryFilter').value.toLowerCase();
+    const poetryItems = document.querySelectorAll('.poetry-item');
 
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
+    poetryItems.forEach(item => {
+        const title = item.querySelector('h3').textContent.toLowerCase();
+        const poem = item.querySelector('.poem').textContent.toLowerCase();
+        const category = item.querySelector('.category').textContent.toLowerCase();
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
+        const matchesSearch = title.includes(searchTerm) || poem.includes(searchTerm);
+        const matchesCategory = categoryFilter === '' || category === categoryFilter;
+
+        item.style.display = (matchesSearch && matchesCategory) ? 'block' : 'none';
+    });
+}
+
+function likeVerse(verseId) {
+    fetch(`/api/verse/${verseId}/like`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')  // For Django CSRF protection
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const likesElement = document.getElementById(`likes-${verseId}`);
+            likesElement.textContent = data.likes_count;
+            // Toggle active state on the like button
+            const likeButton = likesElement.parentElement;
+            likeButton.classList.toggle('active');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function showComments(verseId) {
+    const commentSection = document.querySelector(`#comments-${verseId}`);
+    
+    // If comment section doesn't exist, create and load it
+    if (!commentSection) {
+        const poetryItem = document.querySelector(`.poetry-item[data-verse-id="${verseId}"]`);
+        const commentsDiv = document.createElement('div');
+        commentsDiv.id = `comments-${verseId}`;
+        commentsDiv.className = 'comments-section';
+        
+        // Add loading indicator
+        commentsDiv.innerHTML = '<div class="loading">Loading comments...</div>';
+        poetryItem.appendChild(commentsDiv);
+
+        // Fetch comments from the server
+        fetch(`/api/verse/${verseId}/comments`)
+            .then(response => response.json())
+            .then(data => {
+                const commentsHtml = data.comments.map(comment => `
+                    <div class="comment">
+                        <div class="comment-header">
+                            <span class="comment-author">${comment.author}</span>
+                            <span class="comment-date">${comment.created_at}</span>
+                        </div>
+                        <div class="comment-content">${comment.content}</div>
+                    </div>
+                `).join('');
+
+                commentsDiv.innerHTML = `
+                    <div class="comments-container">
+                        ${commentsHtml}
+                        <div class="add-comment">
+                            <textarea placeholder="Add a comment..." id="comment-input-${verseId}"></textarea>
+                            <button onclick="submitComment(${verseId})" class="btn btn-sm btn-primary">Submit</button>
+                        </div>
+                    </div>
+                `;
+            })
+            .catch(error => {
+                commentsDiv.innerHTML = '<div class="error">Error loading comments</div>';
+                console.error('Error:', error);
             });
-        }, observerOptions);
+    } else {
+        // Toggle comment section visibility if it already exists
+        commentSection.style.display = 
+            commentSection.style.display === 'none' ? 'block' : 'none';
+    }
+}
 
-        document.querySelectorAll('section').forEach(section => {
-            observer.observe(section);
-        });
-    </script>
-</body>
-</html>
+// Helper function to get CSRF token from cookies
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// function to handle comment submission
+function submitComment(verseId) {
+    const commentInput = document.getElementById(`comment-input-${verseId}`);
+    const comment = commentInput.value.trim();
+    
+    if (!comment) return;
+
+    fetch(`/api/verse/${verseId}/comments`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ content: comment })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            commentInput.value = '';
+            showComments(verseId); // Refresh comments
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+</script>
+{% endblock %}
